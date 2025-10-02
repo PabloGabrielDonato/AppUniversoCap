@@ -1,36 +1,62 @@
-import * as SecureStore from 'expo-secure-store';
+import AsyncStorage from "@react-native-async-storage/async-storage"
+import type { User } from "../types"
 
-const TOKEN_KEY = 'userToken';
-const USER_KEY = 'userData';
+const KEYS = {
+  TOKEN: "@auth_token",
+  USER: "@user_data",
+}
 
 export const storage = {
+  // Token methods
   saveToken: async (token: string): Promise<void> => {
-    await SecureStore.setItemAsync(TOKEN_KEY, token);
+    try {
+      await AsyncStorage.setItem(KEYS.TOKEN, token)
+      console.log("[v0 Storage] Token guardado")
+    } catch (error) {
+      console.error("[v0 Storage] Error guardando token:", error)
+      throw error
+    }
   },
 
   getToken: async (): Promise<string | null> => {
-    return await SecureStore.getItemAsync(TOKEN_KEY);
+    try {
+      const token = await AsyncStorage.getItem(KEYS.TOKEN)
+      return token
+    } catch (error) {
+      console.error("[v0 Storage] Error obteniendo token:", error)
+      return null
+    }
   },
 
-  removeToken: async (): Promise<void> => {
-    await SecureStore.deleteItemAsync(TOKEN_KEY);
+  // User methods
+  saveUser: async (user: User): Promise<void> => {
+    try {
+      await AsyncStorage.setItem(KEYS.USER, JSON.stringify(user))
+      console.log("[v0 Storage] Usuario guardado")
+    } catch (error) {
+      console.error("[v0 Storage] Error guardando usuario:", error)
+      throw error
+    }
   },
 
-  saveUser: async (user: any): Promise<void> => {
-    await SecureStore.setItemAsync(USER_KEY, JSON.stringify(user));
+  getUser: async (): Promise<User | null> => {
+    try {
+      const userData = await AsyncStorage.getItem(KEYS.USER)
+      return userData ? JSON.parse(userData) : null
+    } catch (error) {
+      console.error("[v0 Storage] Error obteniendo usuario:", error)
+      return null
+    }
   },
 
-  getUser: async (): Promise<any | null> => {
-    const user = await SecureStore.getItemAsync(USER_KEY);
-    return user ? JSON.parse(user) : null;
-  },
-
-  removeUser: async (): Promise<void> => {
-    await SecureStore.deleteItemAsync(USER_KEY);
-  },
-
+  // Clear all
   clearAll: async (): Promise<void> => {
-    await SecureStore.deleteItemAsync(TOKEN_KEY);
-    await SecureStore.deleteItemAsync(USER_KEY);
+    try {
+      await AsyncStorage.multiRemove([KEYS.TOKEN, KEYS.USER])
+      console.log("[v0 Storage] Storage limpiado")
+    } catch (error) {
+      console.error("[v0 Storage] Error limpiando storage:", error)
+      throw error
+    }
   },
-};
+}

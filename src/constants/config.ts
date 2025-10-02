@@ -1,22 +1,12 @@
-import { Platform } from "react-native"
+const USE_LOCAL_DEV = true
 
-// Cambia esto a true para usar el servidor local, false para producción
-const USE_LOCAL_DEV = false
+// INSTRUCCIONES:
+// 1. Ejecuta: ngrok http 90
+// 2. Copia la URL que te da (ej: https://abc123.ngrok-free.app)
+// 3. Pégala en NGROK_URL abajo
+const NGROK_URL = "https://fe462230b590.ngrok-free.app/" // Reemplaza esto con tu URL de ngrok
 
-// Para Android Emulator usa 10.0.2.2, para iOS/físico usa tu IP local
-// IMPORTANTE: Reemplaza "192.168.1.X" con la IP real de tu computadora
-const getLocalDevUrl = () => {
-  if (Platform.OS === "android") {
-    // Android Emulator: 10.0.2.2 apunta al localhost del host
-    return "http://172.20.128.1:90"
-  }
-  // iOS Simulator puede usar localhost
-  // Para dispositivo físico, usa la IP de tu computadora en la red local
-  // Ejemplo: return 'http://192.168.1.100:90';
-  return "http://localhost:90"
-}
-
-const DEV_BASE_URL = getLocalDevUrl()
+const DEV_BASE_URL = NGROK_URL
 const PROD_BASE_URL = "https://miscausas.com.ar"
 
 export const API_CONFIG = {
@@ -30,6 +20,16 @@ export const ENDPOINTS = {
     LOGOUT: "/api/auth/logout",
   },
   USER: "/api/user",
+
+  // Endpoints actualizados para coincidir con el backend
+  USER_DATA: {
+    PROFILE: "/api/user/profile",
+    GET: "/api/user/data",
+    UPDATE: "/api/user/data",
+    FEDERATIONS: "/api/user/federations",
+    TOURNAMENTS: "/api/user/tournaments",
+    PAYMENTS: "/api/user/payments",
+  },
 
   PAYMENTS: {
     WEBHOOKS_MERCADOPAGO: "/api/payments/webhooks/mercadopago",

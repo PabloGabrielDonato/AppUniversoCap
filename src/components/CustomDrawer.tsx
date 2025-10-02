@@ -65,7 +65,7 @@ export default function CustomDrawer(props: DrawerContentComponentProps) {
           </Text>
         </View>
         <Text style={styles.userName}>
-          {user?.name || 'Usuario'} {user?.apellido || ''}
+          {user?.name || 'Usuario'} {user?.last_name || ''}
         </Text>
         <Text style={styles.userEmail}>{user?.email || ''}</Text>
       </View>

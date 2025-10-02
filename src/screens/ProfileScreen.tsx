@@ -8,7 +8,7 @@ export default function ProfileScreen({ navigation }: any) {
 
   const qrData = JSON.stringify({
     id: user?.id,
-    dni: user?.dni,
+    dni: user?.user_data?.dni,
     name: user?.name,
     email: user?.email,
   })
@@ -85,7 +85,7 @@ export default function ProfileScreen({ navigation }: any) {
           <View style={styles.infoItem}>
             <Text style={styles.infoLabel}>Edad</Text>
             <Text style={styles.infoValue}>
-              {formatDate(user?.fecha_nacimiento)} ({calculateAge(user?.fecha_nacimiento)})
+              {formatDate(user?.user_data?.birth_date)} ({calculateAge(user?.user_data?.birth_date)})
             </Text>
           </View>
         </View>

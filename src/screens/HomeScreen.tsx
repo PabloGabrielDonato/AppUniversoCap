@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from "react-native"
 import { Header } from "../components"
 import { useAuth } from "../context"
@@ -10,58 +10,86 @@ export default function HomeScreen({ navigation }: any) {
   const { user } = useAuth()
   const [activeTab, setActiveTab] = useState<"ficha" | "institucion" | "archivos">("ficha")
 
-  // Contenido de Ficha
-  const renderFichaContent = () => (
-    <View style={styles.contentContainer}>
-      <View style={styles.infoCard}>
-        <View style={styles.infoRow}>
-          <View style={styles.infoColumn}>
-            <Text style={styles.infoLabel}>Nombre</Text>
-            <Text style={styles.infoValue}>{user?.name || "N/A"}</Text>
-          </View>
-          <View style={styles.infoColumn}>
-            <Text style={styles.infoLabel}>Apellido</Text>
-            <Text style={styles.infoValue}>{user?.apellido || "N/A"}</Text>
-          </View>
-        </View>
+  useEffect(() => {
+    if (user) {
+      console.log("[v0 HomeScreen] Usuario completo:", JSON.stringify(user, null, 2))
+      console.log("[v0 HomeScreen] user_data:", user.user_data)
+    }
+  }, [user])
 
-        <View style={styles.infoRow}>
-          <View style={styles.infoColumn}>
-            <Text style={styles.infoLabel}>D.N.I</Text>
-            <Text style={styles.infoValue}>{user?.dni || "N/A"}</Text>
-          </View>
-          <View style={styles.infoColumn}>
-            <Text style={styles.infoLabel}>Edad</Text>
-            <Text style={styles.infoValue}>{user?.edad || "N/A"}</Text>
-          </View>
-        </View>
+  const renderFichaContent = () => {
+    const userData = user?.user_data
 
-        <View style={styles.infoRow}>
-          <View style={styles.infoColumn}>
-            <Text style={styles.infoLabel}>Teléfono</Text>
-            <Text style={styles.infoValue}>{user?.telefono || "N/A"}</Text>
+    return (
+      <View style={styles.contentContainer}>
+        <View style={styles.infoCard}>
+          <View style={styles.infoRow}>
+            <View style={styles.infoColumn}>
+              <Text style={styles.infoLabel}>Nombre</Text>
+              <Text style={styles.infoValue}>{user?.name || "N/A"}</Text>
+            </View>
+            <View style={styles.infoColumn}>
+              <Text style={styles.infoLabel}>Apellido</Text>
+              <Text style={styles.infoValue}>{user?.last_name || "N/A"}</Text>
+            </View>
           </View>
-          <View style={styles.infoColumn}>
-            <Text style={styles.infoLabel}>E-Mail</Text>
-            <Text style={styles.infoValue}>{user?.email || "N/A"}</Text>
+
+          <View style={styles.infoRow}>
+            <View style={styles.infoColumn}>
+              <Text style={styles.infoLabel}>D.N.I</Text>
+              <Text style={styles.infoValue}>{userData?.dni || "N/A"}</Text>
+            </View>
+            <View style={styles.infoColumn}>
+              <Text style={styles.infoLabel}>Edad</Text>
+              <Text style={styles.infoValue}>{userData?.age || "N/A"}</Text>
+            </View>
           </View>
+
+          <View style={styles.infoRow}>
+            <View style={styles.infoColumn}>
+              <Text style={styles.infoLabel}>Teléfono</Text>
+              <Text style={styles.infoValue}>{user?.phone || "N/A"}</Text>
+            </View>
+            <View style={styles.infoColumn}>
+              <Text style={styles.infoLabel}>E-Mail</Text>
+              <Text style={styles.infoValue}>{user?.email || "N/A"}</Text>
+            </View>
+          </View>
+
+          {userData && (
+            <>
+              <View style={styles.infoRow}>
+                <View style={styles.infoColumn}>
+                  <Text style={styles.infoLabel}>Fecha de Nacimiento</Text>
+                  <Text style={styles.infoValue}>
+                    {userData?.birth_date ? new Date(userData.birth_date).toLocaleDateString() : "N/A"}
+                  </Text>
+                </View>
+                <View style={styles.infoColumn}>
+                  <Text style={styles.infoLabel}>Género</Text>
+                  <Text style={styles.infoValue}>{userData?.gender || "N/A"}</Text>
+                </View>
+              </View>
+            </>
+          )}
         </View>
       </View>
-    </View>
-  )
+    )
+  }
 
-  // Contenido de Institución
   const renderInstitucionContent = () => (
     <View style={styles.contentContainer}>
       <View style={styles.infoCard}>
         <View style={styles.infoRow}>
           <View style={styles.infoColumn}>
             <Text style={styles.infoLabel}>Federación</Text>
-            <Text style={styles.infoValue}>Rioplatense</Text>
+            <Text style={styles.infoValue}>
+              {user?.federations && user.federations.length > 0 ? user.federations[0].name : "N/A"}
+            </Text>
           </View>
           <View style={styles.infoColumn}>
             <Text style={styles.infoLabel}>Club</Text>
-            <Text style={styles.infoValue}>{user?.club_id || "N/A"}</Text>
+            <Text style={styles.infoValue}>{user?.club?.name || "N/A"}</Text>
           </View>
         </View>
 
@@ -75,7 +103,6 @@ export default function HomeScreen({ navigation }: any) {
     </View>
   )
 
-  // Contenido de Archivos
   const renderArchivosContent = () => {
     const documents = [
       { id: 1, nombre: "Apto médico" },
@@ -120,7 +147,6 @@ export default function HomeScreen({ navigation }: any) {
       <ScrollView style={styles.content}>
         <Text style={styles.title}>Escritorio</Text>
 
-        {/* Tabs */}
         <View style={styles.tabs}>
           <TouchableOpacity
             style={[styles.tab, activeTab === "ficha" && styles.tabActive]}
@@ -144,7 +170,6 @@ export default function HomeScreen({ navigation }: any) {
           </TouchableOpacity>
         </View>
 
-        {/* Contenido dinámico según tab activa */}
         {activeTab === "ficha" && renderFichaContent()}
         {activeTab === "institucion" && renderInstitucionContent()}
         {activeTab === "archivos" && renderArchivosContent()}
@@ -186,7 +211,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary,
   },
   tabText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "600",
     color: COLORS.primary,
     fontStyle: "italic",
@@ -254,5 +279,11 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: "#D1D5DB",
     marginVertical: 8,
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: COLORS.text,
+    textAlign: "center",
   },
 })

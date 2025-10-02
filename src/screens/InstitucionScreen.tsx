@@ -22,11 +22,13 @@ export default function InstitucionScreen({ navigation }: any) {
           <View style={styles.infoRow}>
             <View style={styles.infoColumn}>
               <Text style={styles.infoLabel}>Federación</Text>
-              <Text style={styles.infoValue}>Rioplatense</Text>
+              <Text style={styles.infoValue}>
+                {user?.federations && user.federations.length > 0 ? user.federations[0].name : "N/A"}
+              </Text>
             </View>
             <View style={styles.infoColumn}>
               <Text style={styles.infoLabel}>Club</Text>
-              <Text style={styles.infoValue}>{user?.club_id || "N/A"}</Text>
+              <Text style={styles.infoValue}>{user?.club?.name || "N/A"}</Text>
             </View>
           </View>
 

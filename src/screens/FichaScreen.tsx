@@ -50,6 +50,7 @@ export default function FichaScreen({ navigation }: any) {
               <Text style={styles.infoValue}>{user?.email || 'N/A'}</Text>
             </View>
           </View>
+          
         </View>
       </ScrollView>
     </View>
