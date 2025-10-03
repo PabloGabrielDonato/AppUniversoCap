@@ -4,7 +4,7 @@ const USE_LOCAL_DEV = true
 // 1. Ejecuta: ngrok http 90
 // 2. Copia la URL que te da (ej: https://abc123.ngrok-free.app)
 // 3. Pégala en NGROK_URL abajo
-const NGROK_URL = "https://fe462230b590.ngrok-free.app/" // Reemplaza esto con tu URL de ngrok
+const NGROK_URL = "https://dc38e1a5fe0f.ngrok-free.app/" // Reemplaza esto con tu URL de ngrok
 
 const DEV_BASE_URL = NGROK_URL
 const PROD_BASE_URL = "https://miscausas.com.ar"

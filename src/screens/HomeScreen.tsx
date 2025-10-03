@@ -1,21 +1,111 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from "react-native"
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from "react-native"
+import * as FileSystem from "expo-file-system"
+import * as Sharing from "expo-sharing"
 import { Header } from "../components"
 import { useAuth } from "../context"
 import { COLORS } from "../constants"
+import { API_CONFIG } from "../constants/config"
 
 export default function HomeScreen({ navigation }: any) {
   const { user } = useAuth()
   const [activeTab, setActiveTab] = useState<"ficha" | "institucion" | "archivos">("ficha")
+  const [downloading, setDownloading] = useState<string | null>(null)
 
   useEffect(() => {
     if (user) {
-      // console.log("[v0 HomeScreen] Usuario completo:", JSON.stringify(user, null, 2))
-      // console.log("[v0 HomeScreen] user_data:", user.user_data)
+      console.log("[v0 HomeScreen] Usuario completo:", JSON.stringify(user, null, 2))
+      console.log("[v0 HomeScreen] user_data:", user.user_data)
     }
   }, [user])
+
+  const calculateAge = (dateString?: string) => {
+    if (!dateString) return ""
+    const birthDate = new Date(dateString)
+    const today = new Date()
+    let age = today.getFullYear() - birthDate.getFullYear()
+    const monthDiff = today.getMonth() - birthDate.getMonth()
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--
+    }
+    return age
+  }
+
+  const downloadFile = async (fileName: string | undefined) => {
+    if (!fileName) {
+      Alert.alert("Error", "Archivo no disponible")
+      return
+    }
+
+    try {
+      setDownloading(fileName)
+
+      const baseUrl = API_CONFIG.BASE_URL.endsWith("/") ? API_CONFIG.BASE_URL.slice(0, -1) : API_CONFIG.BASE_URL
+      const fileUrl = `${baseUrl}/storage/${fileName}`
+      const fileUri = FileSystem.cacheDirectory + fileName
+
+      console.log("=".repeat(60))
+      console.log("[v0 HomeScreen] 🔍 INTENTANDO DESCARGAR ARCHIVO")
+      console.log("[v0 HomeScreen] 📁 Nombre del archivo:", fileName)
+      console.log("[v0 HomeScreen] 🌐 URL completa:", fileUrl)
+      console.log("[v0 HomeScreen] 💾 Guardando en:", fileUri)
+      console.log("=".repeat(60))
+
+      const downloadResult = await FileSystem.downloadAsync(fileUrl, fileUri)
+
+      console.log("[v0 HomeScreen] ✅ Resultado de descarga - Status:", downloadResult.status)
+
+      setDownloading(null)
+
+      if (downloadResult.status === 200) {
+        console.log("[v0 HomeScreen] ✅ Descarga exitosa, intentando compartir...")
+
+        const fileInfo = await FileSystem.getInfoAsync(downloadResult.uri)
+
+        if (!fileInfo.exists) {
+          console.error("[v0 HomeScreen] ❌ El archivo no existe después de descargar")
+          Alert.alert("Error", "El archivo no se descargó correctamente")
+          return
+        }
+
+        const isAvailable = await Sharing.isAvailableAsync()
+
+        if (isAvailable) {
+          try {
+            await Sharing.shareAsync(downloadResult.uri, {
+              mimeType: "image/jpeg",
+              dialogTitle: "Guardar archivo",
+            })
+            console.log("[v0 HomeScreen] ✅ Archivo compartido exitosamente")
+          } catch (shareError) {
+            console.error("[v0 HomeScreen] ❌ Error al compartir:", shareError)
+            Alert.alert("Error", `No se pudo compartir el archivo: ${shareError}`)
+          }
+        } else {
+          Alert.alert("Descarga exitosa", `El archivo se ha descargado en: ${downloadResult.uri}`)
+        }
+      } else {
+        console.error("=".repeat(60))
+        console.error("[v0 HomeScreen] ❌ ERROR 404 - ARCHIVO NO ENCONTRADO")
+        console.error("[v0 HomeScreen] La URL no existe en el servidor:", fileUrl)
+        console.error("[v0 HomeScreen] Verifica que:")
+        console.error("[v0 HomeScreen] 1. El symlink de storage esté configurado en Laravel")
+        console.error("[v0 HomeScreen] 2. La ruta correcta sea /storage/ y no /public/storage/")
+        console.error("[v0 HomeScreen] 3. Los archivos estén en storage/app/public/")
+        console.error("=".repeat(60))
+        Alert.alert(
+          "Error 404",
+          `El archivo no se encuentra en el servidor.\n\nURL intentada:\n${fileUrl}\n\nVerifica la configuración de storage en Laravel.`,
+        )
+      }
+    } catch (error) {
+      setDownloading(null)
+      console.error("[v0 HomeScreen] ❌ Error al descargar archivo:", error)
+      Alert.alert("Error", `Ocurrió un error al descargar el archivo: ${error}`)
+    }
+  }
 
   const renderFichaContent = () => {
     const userData = user?.user_data
@@ -41,7 +131,7 @@ export default function HomeScreen({ navigation }: any) {
             </View>
             <View style={styles.infoColumn}>
               <Text style={styles.infoLabel}>Edad</Text>
-              <Text style={styles.infoValue}>{userData?.age || "N/A"}</Text>
+              <Text style={styles.infoValue}>{calculateAge(userData?.birth_date) || "N/A"}</Text>
             </View>
           </View>
 
@@ -70,7 +160,6 @@ export default function HomeScreen({ navigation }: any) {
                   <Text style={styles.infoValue}>{userData?.gender || "N/A"}</Text>
                 </View>
               </View>
-
             </>
           )}
         </View>
@@ -105,10 +194,24 @@ export default function HomeScreen({ navigation }: any) {
   )
 
   const renderArchivosContent = () => {
+    const userData = user?.user_data || user?.userData
+
     const documents = [
-      { id: 1, nombre: "Apto médico" },
-      { id: 2, nombre: "Frente DNI" },
-      { id: 3, nombre: "Revés DNI" },
+      {
+        id: 1,
+        nombre: "Apto médico",
+        fileName: undefined,
+      },
+      {
+        id: 2,
+        nombre: "Frente DNI",
+        fileName: userData?.dni_front,
+      },
+      {
+        id: 3,
+        nombre: "Revés DNI",
+        fileName: userData?.dni_back,
+      },
     ]
 
     return (
@@ -119,15 +222,19 @@ export default function HomeScreen({ navigation }: any) {
               <View style={styles.documentItem}>
                 <Text style={styles.documentName}>{doc.nombre}</Text>
 
-                <View style={styles.documentActions}>
-                  <TouchableOpacity style={styles.actionButton}>
-                    <Text style={styles.actionButtonText}>Ver</Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity style={styles.actionButton}>
-                    <Text style={styles.actionButtonText}>Descargar</Text>
-                  </TouchableOpacity>
-                </View>
+                {downloading === doc.fileName ? (
+                  <Text style={styles.loadingText}>Descargando...</Text>
+                ) : (
+                  <View style={styles.documentActions}>
+                    <TouchableOpacity
+                      style={[styles.actionButton, !doc.fileName && styles.actionButtonDisabled]}
+                      onPress={() => downloadFile(doc.fileName)}
+                      disabled={!doc.fileName}
+                    >
+                      <Text style={styles.actionButtonText}>Descargar</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
               </View>
               {index < documents.length - 1 && <View style={styles.divider} />}
             </View>
@@ -271,6 +378,10 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     minWidth: 100,
     alignItems: "center",
+  },
+  actionButtonDisabled: {
+    backgroundColor: "#9CA3AF",
+    opacity: 0.5,
   },
   actionButtonText: {
     color: COLORS.white,
