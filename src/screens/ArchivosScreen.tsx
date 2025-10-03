@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Modal, Image } from "react-native"
-import * as FileSystem from "expo-file-system"
+import * as FileSystem from "expo-file-system/legacy"
 import * as Sharing from "expo-sharing"
 import { Header } from "../components"
 import { useAuth } from "../context"
@@ -108,12 +108,7 @@ export default function ArchivosScreen({ navigation }: any) {
 
   return (
     <View style={styles.container}>
-      <Header
-        onMenuPress={() => navigation.openDrawer()}
-        onProfilePress={() => navigation.navigate("Profile")}
-        userName={user?.name}
-        userPhoto={user?.photo}
-      />
+      <Header onMenuPress={() => navigation.openDrawer()} onProfilePress={() => navigation.navigate("Profile")} />
 
       <ScrollView style={styles.content}>
         <Text style={styles.title}>Archivos</Text>

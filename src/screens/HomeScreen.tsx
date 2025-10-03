@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from "react"
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Modal, Image } from "react-native"
-import * as FileSystem from "expo-file-system"
+import * as FileSystem from "expo-file-system/legacy"
 import * as Sharing from "expo-sharing"
 import { Header } from "../components"
 import { useAuth } from "../context"
 import { COLORS } from "../constants"
 import { API_CONFIG } from "../constants/config"
+import { userApi } from "../api"
 
 export default function HomeScreen({ navigation }: any) {
   const { user } = useAuth()
@@ -15,6 +16,10 @@ export default function HomeScreen({ navigation }: any) {
   const [downloading, setDownloading] = useState<string | null>(null)
   const [modalVisible, setModalVisible] = useState(false)
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
+  const [userRoles, setUserRoles] = useState<any[]>([])
+  const [userLicences, setUserLicences] = useState<any[]>([])
+  const [loadingRoles, setLoadingRoles] = useState(false)
+  const [loadingLicences, setLoadingLicences] = useState(false)
 
   useEffect(() => {
     if (user) {
@@ -22,6 +27,8 @@ export default function HomeScreen({ navigation }: any) {
       console.log("[v0 HomeScreen] user_data:", user.user_data)
     }
   }, [user])
+
+
 
   const calculateAge = (dateString?: string) => {
     if (!dateString) return ""
@@ -175,6 +182,39 @@ export default function HomeScreen({ navigation }: any) {
                   <Text style={styles.infoValue}>{userData?.gender || "N/A"}</Text>
                 </View>
               </View>
+
+              <View style={styles.infoRow}>
+                <View style={styles.infoColumn}>
+                  <Text style={styles.infoLabel}>Dirección</Text>
+                  <Text style={styles.infoValue}>{userData?.address || "N/A"}</Text>
+                </View>
+                <View style={styles.infoColumn}>
+                  <Text style={styles.infoLabel}>Ciudad</Text>
+                  <Text style={styles.infoValue}>{userData?.city || "N/A"}</Text>
+                </View>
+              </View>
+
+              <View style={styles.infoRow}>
+                <View style={styles.infoColumn}>
+                  <Text style={styles.infoLabel}>CUIT</Text>
+                  <Text style={styles.infoValue}>{userData?.cuit || "N/A"}</Text>
+                </View>
+                <View style={styles.infoColumn}>
+                  <Text style={styles.infoLabel}>Nacionalidad</Text>
+                  <Text style={styles.infoValue}>{userData?.nationality || "N/A"}</Text>
+                </View>
+              </View>
+
+              <View style={styles.infoRow}>
+                <View style={styles.infoColumn}>
+                  <Text style={styles.infoLabel}>Provincia</Text>
+                  <Text style={styles.infoValue}>{userData?.state || "N/A"}</Text>
+                </View>
+                <View style={styles.infoColumn}>
+                  <Text style={styles.infoLabel}>Código Postal</Text>
+                  <Text style={styles.infoValue}>{userData?.zip_code || "N/A"}</Text>
+                </View>
+              </View>
             </>
           )}
         </View>
@@ -202,6 +242,16 @@ export default function HomeScreen({ navigation }: any) {
           <View style={styles.infoColumn}>
             <Text style={styles.infoLabel}>Deporte</Text>
             <Text style={styles.infoValue}>Patín artístico</Text>
+          </View>
+          <View style={styles.infoColumn}>
+            <Text style={styles.infoLabel}>Rol</Text>
+          </View>
+        </View>
+
+        <View style={styles.infoRow}>
+          <View style={styles.infoColumn}>
+            <Text style={styles.infoLabel}>Licencia</Text>
+
           </View>
         </View>
       </View>
@@ -282,12 +332,7 @@ export default function HomeScreen({ navigation }: any) {
 
   return (
     <View style={styles.container}>
-      <Header
-        onMenuPress={() => navigation.openDrawer()}
-        onProfilePress={() => navigation.navigate("Profile")}
-        userName={user?.name}
-        userPhoto={user?.photo}
-      />
+      <Header onMenuPress={() => navigation.openDrawer()} onProfilePress={() => navigation.navigate("Profile")} />
 
       <ScrollView style={styles.content}>
         <Text style={styles.title}>Escritorio</Text>
