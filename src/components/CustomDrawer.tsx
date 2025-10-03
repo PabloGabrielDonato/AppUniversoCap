@@ -1,57 +1,54 @@
-import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Image,
-  ScrollView,
-  Alert,
-} from 'react-native';
-import {
-  DrawerContentScrollView,
-  DrawerItemList,
-  DrawerContentComponentProps,
-} from '@react-navigation/drawer';
-import { useAuth } from '../context';
-import { COLORS } from '../constants';
+"use client"
+import { View, Text, StyleSheet, TouchableOpacity, Image, Alert } from "react-native"
+import { DrawerContentScrollView, DrawerItemList, type DrawerContentComponentProps } from "@react-navigation/drawer"
+import { useAuth } from "../context"
+import { COLORS, API_CONFIG } from "../constants"
 
 export default function CustomDrawer(props: DrawerContentComponentProps) {
-  const { signOut, user } = useAuth();
+  const { signOut, user } = useAuth()
 
   const handleLogout = () => {
-    Alert.alert(
-      'Cerrar sesión',
-      '¿Estás seguro que deseas cerrar sesión?',
-      [
-        {
-          text: 'Cancelar',
-          style: 'cancel',
+    Alert.alert("Cerrar sesión", "¿Estás seguro que deseas cerrar sesión?", [
+      {
+        text: "Cancelar",
+        style: "cancel",
+      },
+      {
+        text: "Cerrar sesión",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await signOut()
+          } catch (error) {
+            Alert.alert("Error", "No se pudo cerrar sesión")
+          }
         },
-        {
-          text: 'Cerrar sesión',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await signOut();
-            } catch (error) {
-              Alert.alert('Error', 'No se pudo cerrar sesión');
-            }
-          },
-        },
-      ]
-    );
-  };
+      },
+    ])
+  }
+
+  const getPhotoUrl = (fotoUrl?: string) => {
+    if (!fotoUrl) return null
+
+    // Si ya es una URL completa, usarla directamente
+    if (fotoUrl.startsWith("http://") || fotoUrl.startsWith("https://")) {
+      return fotoUrl
+    }
+
+    // Eliminar la barra final de BASE_URL si existe
+    const baseUrl = API_CONFIG.BASE_URL.endsWith("/") ? API_CONFIG.BASE_URL.slice(0, -1) : API_CONFIG.BASE_URL
+
+    // Construir la URL completa
+    return `${baseUrl}/storage/${fotoUrl}`
+  }
+
+  const photoUrl = getPhotoUrl(user?.photo)
 
   return (
     <View style={styles.container}>
       {/* Logo Section - Ahora con fondo blanco */}
       <View style={styles.logoContainer}>
-        <Image
-          source={require('../../assets/cap-logo.png')}
-          style={styles.logo}
-          resizeMode="contain"
-        />
+        <Image source={require("../../assets/cap-logo.png")} style={styles.logo} resizeMode="contain" />
       </View>
 
       {/* Línea separadora después del logo */}
@@ -59,15 +56,17 @@ export default function CustomDrawer(props: DrawerContentComponentProps) {
 
       {/* User Info */}
       <View style={styles.userInfo}>
-        <View style={styles.avatar}>
-          <Text style={styles.avatarText}>
-            {user?.name?.charAt(0).toUpperCase() || 'U'}
-          </Text>
-        </View>
+        {photoUrl ? (
+          <Image source={{ uri: photoUrl }} style={styles.avatarImage} />
+        ) : (
+          <View style={styles.avatar}>
+            <Text style={styles.avatarText}>{user?.name?.charAt(0).toUpperCase() || "U"}</Text>
+          </View>
+        )}
         <Text style={styles.userName}>
-          {user?.name || 'Usuario'} {user?.last_name || ''}
+          {user?.name || "Usuario"} {user?.last_name || ""}
         </Text>
-        <Text style={styles.userEmail}>{user?.email || ''}</Text>
+        <Text style={styles.userEmail}>{user?.email || ""}</Text>
       </View>
 
       {/* Línea separadora después del usuario */}
@@ -86,7 +85,7 @@ export default function CustomDrawer(props: DrawerContentComponentProps) {
         </TouchableOpacity>
       </View>
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -95,11 +94,11 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
   },
   logoContainer: {
-    backgroundColor: COLORS.white, // <CHANGE> Cambiado de azul oscuro a blanco
+    backgroundColor: COLORS.white,
     paddingVertical: 30,
     paddingHorizontal: 20,
     paddingTop: 50,
-    alignItems: 'center',
+    alignItems: "center",
   },
   logo: {
     width: 200,
@@ -107,11 +106,11 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 1,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: "#E5E7EB",
   },
   userInfo: {
     padding: 20,
-    alignItems: 'center',
+    alignItems: "center",
     backgroundColor: COLORS.white,
   },
   avatar: {
@@ -119,18 +118,24 @@ const styles = StyleSheet.create({
     height: 60,
     borderRadius: 30,
     backgroundColor: COLORS.secondary,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: 12,
   },
   avatarText: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: "700",
     color: COLORS.white,
+  },
+  avatarImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    marginBottom: 12,
   },
   userName: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
     color: COLORS.text,
     marginBottom: 4,
   },
@@ -144,17 +149,17 @@ const styles = StyleSheet.create({
   },
   logoutContainer: {
     borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
+    borderTopColor: "#E5E7EB",
     padding: 20,
   },
   logoutButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: COLORS.error,
     paddingVertical: 14,
     paddingHorizontal: 20,
     borderRadius: 12,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   logoutIcon: {
     fontSize: 20,
@@ -163,7 +168,7 @@ const styles = StyleSheet.create({
   },
   logoutText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     color: COLORS.white,
   },
-});
+})

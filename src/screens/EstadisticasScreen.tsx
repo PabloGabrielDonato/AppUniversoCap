@@ -1,14 +1,18 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { Header } from '../components';
-import { COLORS } from '../constants';
+"use client"
+import { View, Text, StyleSheet, ScrollView } from "react-native"
+import { Header } from "../components"
+import { useAuth } from "../context"
+import { COLORS } from "../constants"
 
 export default function EstadisticasScreen({ navigation }: any) {
+  const { user } = useAuth()
+
   return (
     <View style={styles.container}>
       <Header
         onMenuPress={() => navigation.openDrawer()}
         onProfilePress={() => navigation.navigate("Profile")}
+        userPhoto={user?.photo}
       />
       <ScrollView style={styles.content}>
         <Text style={styles.title}>Estadísticas</Text>
@@ -49,7 +53,7 @@ export default function EstadisticasScreen({ navigation }: any) {
         </View>
       </ScrollView>
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -63,7 +67,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 32,
-    fontWeight: '700',
+    fontWeight: "700",
     marginBottom: 24,
     color: COLORS.text,
   },
@@ -74,7 +78,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   statRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginBottom: 20,
     gap: 16,
   },
@@ -83,13 +87,13 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: "700",
     marginBottom: 4,
     color: COLORS.text,
   },
   statValue: {
     fontSize: 16,
-    fontStyle: 'italic',
+    fontStyle: "italic",
     color: COLORS.text,
   },
-});
+})

@@ -49,4 +49,4 @@ export const ENDPOINTS = {
 }
 
 // Log para verificar qué URL se está usando
-console.log("[v0 Config] Usando URL:", API_CONFIG.BASE_URL)
+// console.log("[v0 Config] Usando URL:", API_CONFIG.BASE_URL)

@@ -2,16 +2,44 @@
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image } from "react-native"
 import QRCode from "react-native-qrcode-svg"
 import { useAuth } from "../context"
+import { API_CONFIG } from "../constants/config"
 
 export default function ProfileScreen({ navigation }: any) {
   const { user } = useAuth()
 
+  console.log("[v0] Usuario completo:", JSON.stringify(user, null, 2))
+  console.log("[v0] Campo photo del usuario:", user?.photo)
+  console.log("[v0] Campo foto_url del usuario:", user?.foto_url)
+  console.log("[v0] BASE_URL del API:", API_CONFIG.BASE_URL)
+
   const qrData = JSON.stringify({
     id: user?.id,
-    dni: user?.user_data?.dni,
     name: user?.name,
+    last_name: user?.last_name,
     email: user?.email,
+    phone: user?.phone,
   })
+
+  const getPhotoUrl = (fotoUrl?: string) => {
+    console.log("[v0] getPhotoUrl recibió:", fotoUrl)
+    if (!fotoUrl) {
+      console.log("[v0] fotoUrl es null/undefined, retornando null")
+      return null
+    }
+    // Si ya es una URL completa, usarla directamente
+    if (fotoUrl.startsWith("http://") || fotoUrl.startsWith("https://")) {
+      console.log("[v0] fotoUrl es una URL completa:", fotoUrl)
+      return fotoUrl
+    }
+    // Si es solo el nombre del archivo, construir la URL completa
+    const photoUrl = `${API_CONFIG.BASE_URL}storage/${fotoUrl}`
+    console.log("[v0] URL de foto construida:", photoUrl)
+    return photoUrl
+  }
+
+  const photoUrl = getPhotoUrl(user?.photo)
+  console.log("[v0] photoUrl final:", photoUrl)
+  console.log("[v0] ¿Mostrará foto?:", !!photoUrl)
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return "N/A"
@@ -44,8 +72,18 @@ export default function ProfileScreen({ navigation }: any) {
 
         {/* Profile Photo */}
         <View style={styles.photoContainer}>
-          {user?.foto_url ? (
-            <Image source={{ uri: user.foto_url }} style={styles.photo} />
+          {photoUrl ? (
+            <Image
+              source={{ uri: photoUrl }}
+              style={styles.photo}
+              onError={(error) => {
+                console.log("[v0] Error cargando foto:", error.nativeEvent.error)
+                console.log("[v0] URL que falló:", photoUrl)
+              }}
+              onLoad={() => {
+                console.log("[v0] Foto cargada exitosamente:", photoUrl)
+              }}
+            />
           ) : (
             <View style={styles.photoPlaceholder}>
               <Text style={styles.photoPlaceholderText}>{user?.name?.charAt(0).toUpperCase() || "U"}</Text>

@@ -12,8 +12,8 @@ export default function HomeScreen({ navigation }: any) {
 
   useEffect(() => {
     if (user) {
-      console.log("[v0 HomeScreen] Usuario completo:", JSON.stringify(user, null, 2))
-      console.log("[v0 HomeScreen] user_data:", user.user_data)
+      // console.log("[v0 HomeScreen] Usuario completo:", JSON.stringify(user, null, 2))
+      // console.log("[v0 HomeScreen] user_data:", user.user_data)
     }
   }, [user])
 
@@ -70,6 +70,7 @@ export default function HomeScreen({ navigation }: any) {
                   <Text style={styles.infoValue}>{userData?.gender || "N/A"}</Text>
                 </View>
               </View>
+
             </>
           )}
         </View>
@@ -142,6 +143,7 @@ export default function HomeScreen({ navigation }: any) {
         onMenuPress={() => navigation.openDrawer()}
         onProfilePress={() => navigation.navigate("Profile")}
         userName={user?.name}
+        userPhoto={user?.photo}
       />
 
       <ScrollView style={styles.content}>

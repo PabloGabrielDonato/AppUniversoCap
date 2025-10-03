@@ -1,14 +1,31 @@
-import React from 'react';
-import { View, TouchableOpacity, StyleSheet, Text } from 'react-native';
-import { COLORS } from '../constants';
+import { View, TouchableOpacity, StyleSheet, Text, Image } from "react-native"
+import { COLORS, API_CONFIG } from "../constants"
 
 interface HeaderProps {
-  onMenuPress: () => void;
-  onProfilePress?: () => void;
-  userName?: string;
+  onMenuPress: () => void
+  onProfilePress?: () => void
+  userName?: string
+  userPhoto?: string
 }
 
-export default function Header({ onMenuPress, onProfilePress, userName = 'P' }: HeaderProps) {
+export default function Header({ onMenuPress, onProfilePress, userName = "P", userPhoto }: HeaderProps) {
+  const getPhotoUrl = (fotoUrl?: string) => {
+    if (!fotoUrl) return null
+
+    // Si ya es una URL completa, usarla directamente
+    if (fotoUrl.startsWith("http://") || fotoUrl.startsWith("https://")) {
+      return fotoUrl
+    }
+
+    // Eliminar la barra final de BASE_URL si existe
+    const baseUrl = API_CONFIG.BASE_URL.endsWith("/") ? API_CONFIG.BASE_URL.slice(0, -1) : API_CONFIG.BASE_URL
+
+    // Construir la URL completa
+    return `${baseUrl}/storage/${fotoUrl}`
+  }
+
+  const photoUrl = getPhotoUrl(userPhoto)
+
   return (
     <View style={styles.header}>
       <TouchableOpacity onPress={onMenuPress}>
@@ -16,38 +33,37 @@ export default function Header({ onMenuPress, onProfilePress, userName = 'P' }: 
       </TouchableOpacity>
 
       <View style={styles.rightIcons}>
-        <TouchableOpacity style={styles.iconButton}>
-          <Text style={styles.bellIcon}>🔔</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={styles.avatar}
-          onPress={onProfilePress}
-        >
-          <Text style={styles.avatarText}>{userName.charAt(0).toUpperCase()}</Text>
+
+
+        <TouchableOpacity style={styles.avatar} onPress={onProfilePress}>
+          {photoUrl ? (
+            <Image source={{ uri: photoUrl }} style={styles.avatarImage} />
+          ) : (
+            <Text style={styles.avatarText}>{userName.charAt(0).toUpperCase()}</Text>
+          )}
         </TouchableOpacity>
       </View>
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
   header: {
     backgroundColor: COLORS.primary,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingHorizontal: 20,
     paddingVertical: 16,
     paddingTop: 50,
   },
   menuIcon: {
     fontSize: 32,
-    color: 'white',
+    color: "white",
   },
   rightIcons: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 16,
   },
   iconButton: {
@@ -60,13 +76,19 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: 'white',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "white",
+    justifyContent: "center",
+    alignItems: "center",
+    overflow: "hidden",
   },
   avatarText: {
     fontSize: 20,
-    fontWeight: '700',
+    fontWeight: "700",
     color: COLORS.primary,
   },
-});
+  avatarImage: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+  },
+})

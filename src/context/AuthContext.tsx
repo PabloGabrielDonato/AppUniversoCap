@@ -25,15 +25,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const token = await storage.getToken()
 
       if (token) {
-        console.log("[v0 AuthContext] Token encontrado, obteniendo usuario...")
-        try {
-          const userData = await authApi.getUser()
-          setUser(userData)
-          console.log("[v0 AuthContext] Usuario cargado")
-        } catch (error) {
-          console.error("[v0 AuthContext] Error cargando usuario, limpiando token")
+        console.log("[v0 AuthContext] Token encontrado, cargando usuario guardado...")
+        const savedUser = await storage.getUser()
+        if (savedUser) {
+          setUser(savedUser)
+          console.log("[v0 AuthContext] Usuario cargado desde storage")
+        } else {
+          console.log("[v0 AuthContext] No hay usuario guardado, limpiando token")
           await storage.clearAll()
-          setUser(null)
         }
       } else {
         console.log("[v0 AuthContext] No hay token guardado")
@@ -59,18 +58,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.log("[v0 AuthContext] Token recibido, guardando...")
       await storage.saveToken(response.token)
 
-      console.log("[v0 AuthContext] Obteniendo datos del usuario...")
-      try {
-        const userData = await authApi.getUser()
-        setUser(userData)
-        await storage.saveUser(userData)
+      if (response.user) {
+        console.log("[v0 AuthContext] Guardando datos del usuario del login")
+        setUser(response.user)
+        await storage.saveUser(response.user)
         console.log("[v0 AuthContext] Usuario guardado correctamente")
-      } catch (userError) {
-        console.warn("[v0 AuthContext] No se pudo obtener usuario del endpoint /user, usando datos del login")
-        if (response.user) {
-          setUser(response.user)
-          await storage.saveUser(response.user)
-        }
+      } else {
+        console.error("[v0 AuthContext] No se recibieron datos del usuario en el login")
+        throw new Error("No se recibieron datos del usuario")
       }
 
       console.log("[v0 AuthContext] Login completado exitosamente")

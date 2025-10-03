@@ -1,11 +1,11 @@
 "use client"
 import { View, Text, StyleSheet, ScrollView } from "react-native"
 import { Header } from "../components"
-import { useAuth } from "../context" // Importado useAuth
+import { useAuth } from "../context"
 import { COLORS } from "../constants"
 
 export default function InstitucionScreen({ navigation }: any) {
-  const { user } = useAuth() // Usando useAuth para obtener el usuario
+  const { user } = useAuth()
 
   return (
     <View style={styles.container}>
@@ -13,6 +13,7 @@ export default function InstitucionScreen({ navigation }: any) {
         onMenuPress={() => navigation.openDrawer()}
         onProfilePress={() => navigation.navigate("Profile")}
         userName={user?.name}
+        userPhoto={user?.photo}
       />
 
       <ScrollView style={styles.content}>
