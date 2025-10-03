@@ -1,14 +1,17 @@
+"use client"
+
 import { View, TouchableOpacity, StyleSheet, Text, Image } from "react-native"
 import { COLORS, API_CONFIG } from "../constants"
+import { useAuth } from "../context/AuthContext"
 
 interface HeaderProps {
   onMenuPress: () => void
   onProfilePress?: () => void
-  userName?: string
-  userPhoto?: string
 }
 
-export default function Header({ onMenuPress, onProfilePress, userName = "P", userPhoto }: HeaderProps) {
+export default function Header({ onMenuPress, onProfilePress }: HeaderProps) {
+  const { user } = useAuth()
+
   const getPhotoUrl = (fotoUrl?: string) => {
     if (!fotoUrl) return null
 
@@ -24,7 +27,8 @@ export default function Header({ onMenuPress, onProfilePress, userName = "P", us
     return `${baseUrl}/storage/${fotoUrl}`
   }
 
-  const photoUrl = getPhotoUrl(userPhoto)
+  const photoUrl = getPhotoUrl(user?.photo)
+  const userName = user?.name || "P"
 
   return (
     <View style={styles.header}>
@@ -33,8 +37,6 @@ export default function Header({ onMenuPress, onProfilePress, userName = "P", us
       </TouchableOpacity>
 
       <View style={styles.rightIcons}>
-
-
         <TouchableOpacity style={styles.avatar} onPress={onProfilePress}>
           {photoUrl ? (
             <Image source={{ uri: photoUrl }} style={styles.avatarImage} />
