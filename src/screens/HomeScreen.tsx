@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from "react-native"
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Modal, Image } from "react-native"
 import * as FileSystem from "expo-file-system"
 import * as Sharing from "expo-sharing"
 import { Header } from "../components"
@@ -13,6 +13,8 @@ export default function HomeScreen({ navigation }: any) {
   const { user } = useAuth()
   const [activeTab, setActiveTab] = useState<"ficha" | "institucion" | "archivos">("ficha")
   const [downloading, setDownloading] = useState<string | null>(null)
+  const [modalVisible, setModalVisible] = useState(false)
+  const [selectedImage, setSelectedImage] = useState<string | null>(null)
 
   useEffect(() => {
     if (user) {
@@ -31,6 +33,19 @@ export default function HomeScreen({ navigation }: any) {
       age--
     }
     return age
+  }
+
+  const viewFile = (fileName: string | undefined) => {
+    if (!fileName) {
+      Alert.alert("Error", "Archivo no disponible")
+      return
+    }
+
+    const baseUrl = API_CONFIG.BASE_URL.endsWith("/") ? API_CONFIG.BASE_URL.slice(0, -1) : API_CONFIG.BASE_URL
+    const fileUrl = `${baseUrl}/storage/${fileName}`
+
+    setSelectedImage(fileUrl)
+    setModalVisible(true)
   }
 
   const downloadFile = async (fileName: string | undefined) => {
@@ -228,6 +243,13 @@ export default function HomeScreen({ navigation }: any) {
                   <View style={styles.documentActions}>
                     <TouchableOpacity
                       style={[styles.actionButton, !doc.fileName && styles.actionButtonDisabled]}
+                      onPress={() => viewFile(doc.fileName)}
+                      disabled={!doc.fileName}
+                    >
+                      <Text style={styles.actionButtonText}>Ver</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.actionButton, !doc.fileName && styles.actionButtonDisabled]}
                       onPress={() => downloadFile(doc.fileName)}
                       disabled={!doc.fileName}
                     >
@@ -243,6 +265,20 @@ export default function HomeScreen({ navigation }: any) {
       </View>
     )
   }
+
+  const renderModal = () => (
+    <Modal animationType="fade" transparent={true} visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
+      <View style={styles.modalContainer}>
+        <View style={styles.modalContent}>
+          <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
+            <Text style={styles.closeButtonText}>✕</Text>
+          </TouchableOpacity>
+
+          {selectedImage && <Image source={{ uri: selectedImage }} style={styles.modalImage} resizeMode="contain" />}
+        </View>
+      </View>
+    </Modal>
+  )
 
   return (
     <View style={styles.container}>
@@ -283,6 +319,8 @@ export default function HomeScreen({ navigation }: any) {
         {activeTab === "institucion" && renderInstitucionContent()}
         {activeTab === "archivos" && renderArchivosContent()}
       </ScrollView>
+
+      {renderModal()}
     </View>
   )
 }
@@ -398,5 +436,37 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: COLORS.text,
     textAlign: "center",
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.9)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContent: {
+    width: "90%",
+    height: "80%",
+    position: "relative",
+  },
+  closeButton: {
+    position: "absolute",
+    top: -40,
+    right: 0,
+    zIndex: 1,
+    backgroundColor: COLORS.white,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  closeButtonText: {
+    fontSize: 24,
+    color: COLORS.text,
+    fontWeight: "700",
+  },
+  modalImage: {
+    width: "100%",
+    height: "100%",
   },
 })
